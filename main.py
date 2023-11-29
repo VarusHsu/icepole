@@ -72,6 +72,21 @@ def print_array(s: list):
     console.print(table)
 
 
+# 循环位移函数
+# 参数说明
+# * a 输入的64位无符号整数
+# * k 输入的位移量（正数表示左移，负数表示右移）
+# 返回值
+# * a 输出的64位无符号整数（位移后的结果）
+def loop_move(a: int, k: int) -> int:
+    if k < 0:
+        k = -k
+        a = (a >> k | a << (64 - k))
+    else:
+        a = (a << k | a >> (64 - k))
+    return a
+
+
 if __name__ == "__main__":
     # 数据输入
     source = [
@@ -82,6 +97,6 @@ if __name__ == "__main__":
     ]
     print("source:")
     print_array(source)
-    print("step µ::")
+    print("step µ:")
     source = mu(source)
     print_array(source)
