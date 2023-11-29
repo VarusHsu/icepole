@@ -16,7 +16,7 @@ max_round = 12
 def kappa(s_input: list, round_no: int) -> list:
     constant = [
         0x0091A2B3C4D5E6F7, 0x0048D159E26AF37B, 0x002468ACF13579BD, 0x00123456F89ABCDE,
-        0x00091A2BFC4D5E6F, 0x00048D15FE26AF37, 0x0002468AFF13579, 0x000123457F89ABCD,  # todo
+        0x00091A2BFC4D5E6F, 0x00048D15FE26AF37, 0x0002468AFF13579B, 0x000123457F89ABCD,  # todo
         0x000091A2BFC4D5E6, 0x000048D1DFE26AF3, 0x00002468EFF13579, 0x00001234F7F89ABC]
     # 定义一个4*5的数组，并把输入的数组拷贝到这个数组中
     s_output = s_input.copy()
@@ -32,7 +32,7 @@ def kappa(s_input: list, round_no: int) -> list:
 # * s_output 输出的4*5数组
 def mu(s_input: list) -> list:
     # 定义4*5的结果数组，初始化为0
-    s_output = [[0] * 5] * 4
+    s_output = [[0] * 5 for _ in range(4)]
 
     # 异或运算的逻辑
     s_output[0][0] = s_input[0][4] ^ s_input[1][0] ^ s_input[2][0] ^ s_input[3][0]
@@ -79,16 +79,14 @@ def print_array(s: list):
 # 返回值
 # * a 输出的64位无符号整数（位移后的结果）
 def loop_move(a: int, k: int) -> int:
+    b = bin(a)
+    b = b[2:]
+    b = b.zfill(64)
     if k < 0:
-        k = -k
-        a = (a >> k | a << (64 - k))
+        b = b[-k:] + b[:-k]
     else:
-        a = (a << k | a >> (64 - k))
-    if a > 18446744073709551616:
-        a = a % 18446744073709551616
-    elif a < 0:
-        a = a % 18446744073709551616 + 18446744073709551616
-    return a
+        b = b[k:] + b[:k]
+    return int(b, 2)
 
 
 # 这个函数对应文档的第ρ步骤（第二步）
@@ -98,7 +96,7 @@ def loop_move(a: int, k: int) -> int:
 # * s_output 输出的4*5数组
 def rho(s_input: list) -> list:
     # 定义4*5的结果数组，初始化为0
-    s_output = [[0] * 5] * 4
+    s_output = [[0] * 5 for _ in range(4)]
 
     # 位移运算的逻辑
     s_output[0][0] = s_input[0][0]  # 改元素不需要位移
@@ -134,7 +132,7 @@ def rho(s_input: list) -> list:
 
 def pi(s_input: list) -> list:
     # 定义4*5的结果数组，初始化为0
-    s_output = [[0] * 5] * 4
+    s_output = [[0] * 5 for _ in range(4)]
     # 循环计算每个位置输出的值
     for x in range(4):
         for y in range(5):
@@ -152,12 +150,12 @@ def pi(s_input: list) -> list:
 def psi(s_input: list) -> list:
     for x in range(4):
         tmp1 = s_input[x][0] & s_input[x][1] & s_input[x][2] & s_input[x][3] & s_input[x][4]
-        tmp2 = (~s_input[x][0]) & (~s_input[x][1]) & (~s_input[x][2]) & (~s_input[x][3]) & (~s_input[x][4])
-        s_input[x][0] = s_input[x][0] ^ ((~s_input[x][1]) & s_input[x][2]) ^ tmp1 ^ tmp2
-        s_input[x][1] = s_input[x][1] ^ ((~s_input[x][2]) & s_input[x][3]) ^ tmp1 ^ tmp2
-        s_input[x][2] = s_input[x][2] ^ ((~s_input[x][3]) & s_input[x][4]) ^ tmp1 ^ tmp2
-        s_input[x][3] = s_input[x][3] ^ ((~s_input[x][4]) & s_input[x][0]) ^ tmp1 ^ tmp2
-        s_input[x][4] = s_input[x][4] ^ ((~s_input[x][0]) & s_input[x][1]) ^ tmp1 ^ tmp2
+        tmp2 = (no_bit(s_input[x][0])) & (no_bit(s_input[x][1])) & (no_bit(s_input[x][2])) & (no_bit(s_input[x][3]))& (no_bit(s_input[x][4]))
+        s_input[x][0] = s_input[x][0] ^ ((no_bit(s_input[x][1])) & s_input[x][2]) ^ tmp1 ^ tmp2
+        s_input[x][1] = s_input[x][1] ^ ((no_bit(s_input[x][2])) & s_input[x][3]) ^ tmp1 ^ tmp2
+        s_input[x][2] = s_input[x][2] ^ ((no_bit(s_input[x][3])) & s_input[x][4]) ^ tmp1 ^ tmp2
+        s_input[x][3] = s_input[x][3] ^ ((no_bit(s_input[x][4])) & s_input[x][0]) ^ tmp1 ^ tmp2
+        s_input[x][4] = s_input[x][4] ^ ((no_bit(s_input[x][0])) & s_input[x][1]) ^ tmp1 ^ tmp2
     return s_input
 
 
@@ -180,13 +178,21 @@ def round_loop(s_input: list, round_no: int) -> list:
     return s_input
 
 
+# 封装后的取反函数，主要是为了解决python中的数字是有符号数
+def no_bit(n: int) -> int:
+    n = ~n
+    if n < 0:
+        n &= 0xFFFFFFFFFFFFFFFF
+    return i
+
+
 if __name__ == "__main__":
     # 数据输入
     source = [
-        [0x00000001, 0x00000002, 0x00000003, 0x00000004, 0x00000005],
-        [0x00000006, 0x00000007, 0x00000008, 0x00000009, 0x0000000A],
-        [0x0000000B, 0x0000000C, 0x0000000D, 0x0000000E, 0x0000000F],
-        [0x00000010, 0x00000011, 0x00000012, 0x00000013, 0x00000014]
+        [0x0000000000000001, 0x0000000000000002, 0x0000000000000003, 0x0000000000000004, 0x0000000000000005],
+        [0x0000000000000006, 0x0000000000000007, 0x0000000000000008, 0x0000000000000009, 0x000000000000000A],
+        [0x000000000000000B, 0x000000000000000C, 0x000000000000000D, 0x000000000000000E, 0x000000000000000F],
+        [0x0000000000000010, 0x0000000000000011, 0x0000000000000012, 0x0000000000000013, 0x0000000000000014]
     ]
     print(f"source data:")
     print_array(source)
