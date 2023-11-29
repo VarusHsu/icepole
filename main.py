@@ -84,6 +84,10 @@ def loop_move(a: int, k: int) -> int:
         a = (a >> k | a << (64 - k))
     else:
         a = (a << k | a >> (64 - k))
+    if a > 18446744073709551616:
+        a = a % 18446744073709551616
+    elif a < 0:
+        a = a % 18446744073709551616 + 18446744073709551616
     return a
 
 
@@ -156,6 +160,7 @@ def psi(s_input: list) -> list:
         s_input[x][4] = s_input[x][4] ^ ((~s_input[x][0]) & s_input[x][1]) ^ tmp1 ^ tmp2
     return s_input
 
+
 def round_loop(s_input: list, round_no: int) -> list:
     print(f"round{round_no + 1} step µ:")
     s_input = mu(s_input)
@@ -187,4 +192,3 @@ if __name__ == "__main__":
     print_array(source)
     for i in range(max_round):
         source = round_loop(source, i)
-
