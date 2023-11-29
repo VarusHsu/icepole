@@ -87,6 +87,94 @@ def loop_move(a: int, k: int) -> int:
     return a
 
 
+# 这个函数对应文档的第ρ步骤（第二步）
+# 参数说明
+# * s_input 输入的4*5数组
+# 返回值
+# * s_output 输出的4*5数组
+def rho(s_input: list) -> list:
+    # 定义4*5的结果数组，初始化为0
+    s_output = [[0] * 5] * 4
+
+    # 位移运算的逻辑
+    s_output[0][0] = s_input[0][0]  # 改元素不需要位移
+    s_output[0][1] = loop_move(s_input[0][1], 36)
+    s_output[0][2] = loop_move(s_input[0][2], 3)
+    s_output[0][3] = loop_move(s_input[0][3], 41)
+    s_output[0][4] = loop_move(s_input[0][4], 18)
+
+    s_output[1][0] = loop_move(s_input[1][0], 1)
+    s_output[1][1] = loop_move(s_input[1][1], 44)
+    s_output[1][2] = loop_move(s_input[1][2], 10)
+    s_output[1][3] = loop_move(s_input[1][3], 45)
+    s_output[1][4] = loop_move(s_input[1][4], 2)
+
+    s_output[2][0] = loop_move(s_input[2][0], 62)
+    s_output[2][1] = loop_move(s_input[2][1], 6)
+    s_output[2][2] = loop_move(s_input[2][2], 43)
+    s_output[2][3] = loop_move(s_input[2][3], 15)
+    s_output[2][4] = loop_move(s_input[2][4], 61)
+
+    s_output[3][0] = loop_move(s_input[3][0], 28)
+    s_output[3][1] = loop_move(s_input[3][1], 55)
+    s_output[3][2] = loop_move(s_input[3][2], 25)
+    s_output[3][3] = loop_move(s_input[3][3], 21)
+    s_output[3][4] = loop_move(s_input[3][4], 56)
+    return s_output
+
+
+# 这个函数对应文档的第π步骤（第三步）
+# 参数说明
+# * s_input 输入的4*5数组
+# 返回值
+
+def pi(s_input: list) -> list:
+    # 定义4*5的结果数组，初始化为0
+    s_output = [[0] * 5] * 4
+    # 循环计算每个位置输出的值
+    for x in range(4):
+        for y in range(5):
+            xx = (x + y) % 4
+            yy = (xx + y + 1) % 5
+            s_output[xx][yy] = s_input[x][y]
+    return s_output
+
+
+# 这个函数对应文档的第ψ步骤（第四步）
+# 参数说明
+# * s_input 输入的4*5数组
+# 返回值
+# * s_output 输出的4*5数组
+def psi(s_input: list) -> list:
+    for x in range(4):
+        tmp1 = s_input[x][0] & s_input[x][1] & s_input[x][2] & s_input[x][3] & s_input[x][4]
+        tmp2 = (~s_input[x][0]) & (~s_input[x][1]) & (~s_input[x][2]) & (~s_input[x][3]) & (~s_input[x][4])
+        s_input[x][0] = s_input[x][0] ^ ((~s_input[x][1]) & s_input[x][2]) ^ tmp1 ^ tmp2
+        s_input[x][1] = s_input[x][1] ^ ((~s_input[x][2]) & s_input[x][3]) ^ tmp1 ^ tmp2
+        s_input[x][2] = s_input[x][2] ^ ((~s_input[x][3]) & s_input[x][4]) ^ tmp1 ^ tmp2
+        s_input[x][3] = s_input[x][3] ^ ((~s_input[x][4]) & s_input[x][0]) ^ tmp1 ^ tmp2
+        s_input[x][4] = s_input[x][4] ^ ((~s_input[x][0]) & s_input[x][1]) ^ tmp1 ^ tmp2
+    return s_input
+
+def round_loop(s_input: list, round_no: int) -> list:
+    print(f"round{round_no + 1} step µ:")
+    s_input = mu(s_input)
+    print_array(s_input)
+    print(f"round{round_no + 1} step ρ:")
+    s_input = rho(s_input)
+    print_array(s_input)
+    print(f"round{round_no + 1} step π:")
+    s_input = pi(s_input)
+    print_array(s_input)
+    print(f"round{round_no + 1} step ψ:")
+    s_input = psi(s_input)
+    print_array(s_input)
+    print(f"round{round_no + 1} step κ:")
+    s_input = kappa(s_input, round_no)
+    print_array(s_input)
+    return s_input
+
+
 if __name__ == "__main__":
     # 数据输入
     source = [
@@ -95,8 +183,8 @@ if __name__ == "__main__":
         [0x0000000B, 0x0000000C, 0x0000000D, 0x0000000E, 0x0000000F],
         [0x00000010, 0x00000011, 0x00000012, 0x00000013, 0x00000014]
     ]
-    print("source:")
+    print(f"source data:")
     print_array(source)
-    print("step µ:")
-    source = mu(source)
-    print_array(source)
+    for i in range(max_round):
+        source = round_loop(source, i)
+
